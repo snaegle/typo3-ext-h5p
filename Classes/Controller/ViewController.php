@@ -30,6 +30,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Core\Context\Context;
 
 /**
  * Class ViewController
@@ -208,14 +209,18 @@ class ViewController extends ActionController
      */
     public function statisticsAction()
     {
-        if (!$GLOBALS['TSFE']->loginUser) {
+        $context = GeneralUtility::makeInstance(Context::class);
+        $fe_user_uid = $context->getPropertyFromAspect('frontend.user', 'id', 0) > 0;
+
+        if ($fe_user_uid == 0) {
             $this->view->assign('notLoggedIn', true);
             return;
         }
 
         $user = $GLOBALS['TSFE']->fe_user->user;
 
-        $statistics = $this->contentResultRepository->findByUser((int)$user['uid']) ;
+        $statistics = $this->contentResultRepository->findByUser((int)$fe_user_uid);
+        var_dump($context->getPropertyFromAspect('frontend.user', 'lastname'));
         if (!$statistics) {
             $this->view->assign('statisticsNotFound', true);
             return;
